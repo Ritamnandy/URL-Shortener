@@ -12,4 +12,4 @@ const redis = new Redis( {
     ...connection
 } );
 
-export { redis }
+export { redis,connection }
