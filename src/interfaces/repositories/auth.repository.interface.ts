@@ -20,7 +20,7 @@ interface IAuthRepository
     getUserByEmail ( email: string ): Promise<CreatedUser | null>
     deleteUser ( id: string ): Promise<boolean>
     updateUser ( id: string, data: Partial<updatedUser> ): Promise<CreatedUser | null>
-    generateTokenPair ( accessTokenPayload: AccessTokenPayload, refreshTokenPayload: RefreshTokenPayload ): Promise<{ accessToken: string, refreshToken: string } | null>
+    generateTokenPair ( accessTokenPayload: AccessTokenPayload, refreshTokenPayload: RefreshTokenPayload ): { accessToken: string, refreshToken: string } | null
     updatedRefreshToken ( id: string, refreshToken: string ): Promise<void>
 }
 
