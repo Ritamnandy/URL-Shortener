@@ -14,10 +14,16 @@ const urlSchema = object( {
     title: z
         .string()
         .trim()
-        .max( 100, { message: "Title must be at most 100 characters long" } )
-        .optional(),
+        .max( 100, { message: "Title must be at most 100 characters long" } ),
 } )
 
-type urlInput = z.infer<typeof urlSchema>
+type urlbody = z.infer<typeof urlSchema>
+type urlInput = {
+    originalUrl: urlbody[ "originalUrl" ]
+    title: urlbody[ "title" ],
+    userId: string
+    shortUrl: string
+    expiryAt: Date
+}
 
-export { urlSchema, type urlInput }
+export { urlSchema, type urlInput, type urlbody }
