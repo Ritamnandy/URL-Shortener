@@ -21,7 +21,9 @@ interface IAuthRepository
     deleteUser ( id: string ): Promise<boolean>
     updateUser ( id: string, data: Partial<updatedUser> ): Promise<CreatedUser | null>
     generateTokenPair ( accessTokenPayload: AccessTokenPayload, refreshTokenPayload: RefreshTokenPayload ): { accessToken: string, refreshToken: string } | null
-    updatedRefreshToken ( id: string, refreshToken: string ): Promise<void>
+    updateRefreshToken ( id: string, refreshToken: string ): Promise<void>
+    updatePassword ( id: string, password: string ): Promise<CreatedUser | null>
+    verifyPassword ( hashedPassword: string, userPassword: string ): Promise<boolean>
 }
 
 export type { IAuthRepository, CreatedUser, updatedUser }

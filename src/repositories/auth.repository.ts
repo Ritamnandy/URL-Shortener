@@ -1,29 +1,36 @@
 
-import type { IAuthRepository, CreatedUser, AccessTokenPayload, RefreshTokenPayload } from "../interfaces/index.js";
+import type { IAuthRepository, CreatedUser, updatedUser, AccessTokenPayload, RefreshTokenPayload } from "../interfaces/index.js";
+import bcrypt from "bcrypt"
 import type { registerInput } from "../schemas/index.js"
 import { prisma } from "../configs/prisma.client.config.js";
 import { generateAccessToken, generateRefreshToken, logger } from "../utils/index.js";
+
+const userSelect = {
+    id: true,
+    first_name: true,
+    last_name: true,
+    email: true,
+    avatar: true,
+} as const;
+
 
 class AuthRepository implements IAuthRepository
 {
     public async createUser ( data: registerInput ): Promise<CreatedUser | null>
     {
-        return await prisma.user.create( {
-            data
-        } )
+        const hashedPassword = await bcrypt.hash( data.password, 13 )
+        return await prisma.user.create(
+            {
+                data: { ...data, password: hashedPassword }, select: userSelect
+            }
+        )
     }
     public async getUserById ( id: string ): Promise<CreatedUser | null>
     {
         return await prisma.user.findUnique( {
             where: {
                 id
-            }, select: {
-                id: true,
-                first_name: true,
-                last_name: true,
-                email: true,
-                avatar: true
-            }
+            }, select: userSelect
         } )
     }
     public async getUserByEmail ( email: string ): Promise<CreatedUser | null>
@@ -31,34 +38,36 @@ class AuthRepository implements IAuthRepository
         return await prisma.user.findUnique( {
             where: {
                 email
-            }, select: {
-                id: true,
-                first_name: true,
-                last_name: true,
-                email: true,
-                avatar: true
-            }
+            }, select: userSelect
         } )
     }
-    public async updateUser ( id: string, data: Partial<CreatedUser> ): Promise<CreatedUser | null>
+    public async updateUser ( id: string, data: Partial<updatedUser> ): Promise<CreatedUser | null>
     {
         return await prisma.user.update( {
             where: {
                 id
-            }, data
+            }, data, select: userSelect
         } )
     }
     public async deleteUser ( id: string ): Promise<boolean>
     {
-        await prisma.user.update( {
-            where: {
-                id
-            }, data: {
-                status: "DELETED",
-                refreshToken: null
-            }
-        } )
-        return true
+        try
+        {
+            await prisma.user.update( {
+                where: { id },
+                data: {
+                    status: "DELETED",
+                    refreshToken: null,
+                },
+            } );
+            return true;
+        } catch ( err )
+        {
+            logger.error(
+                `Error deleting user (id: ${ id }): ${ err instanceof Error ? err.message : err ?? "unknown error" }`
+            );
+            return false;
+        }
     }
 
     public generateTokenPair ( accessTokenPayload: AccessTokenPayload, refreshTokenPayload: RefreshTokenPayload ): { accessToken: string, refreshToken: string } | null
@@ -76,7 +85,7 @@ class AuthRepository implements IAuthRepository
         }
     }
 
-    public async updatedRefreshToken ( id: string, refreshToken: string ): Promise<void>
+    public async updateRefreshToken ( id: string, refreshToken: string ): Promise<void>
     {
         await prisma.user.update( {
             where: {
@@ -86,7 +95,21 @@ class AuthRepository implements IAuthRepository
             }
         } )
     }
-
+    public async verifyPassword ( hashedPassword: string, userPassword: string ): Promise<boolean>
+    {
+        return await bcrypt.compare( userPassword, hashedPassword )
+    }
+    public async updatePassword ( id: string, password: string ): Promise<CreatedUser | null>
+    {
+        const hashedPassword = await bcrypt.hash( password, 13 )
+        return await prisma.user.update( {
+            where: {
+                id
+            }, data: {
+                password: hashedPassword
+            }, select: userSelect
+        } )
+    }
 }
 
 
