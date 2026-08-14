@@ -24,6 +24,8 @@ interface IAuthRepository
     updateRefreshToken ( id: string, refreshToken: string ): Promise<void>
     updatePassword ( id: string, password: string ): Promise<CreatedUser | null>
     verifyPassword ( hashedPassword: string, userPassword: string ): Promise<boolean>
+    getUserWithPasswordByEmail ( email: string ): Promise<{ id: string; password: string | null, refreshToken: string | null } | null>;
+
 }
 
 export type { IAuthRepository, CreatedUser, updatedUser }

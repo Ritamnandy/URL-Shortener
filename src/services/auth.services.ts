@@ -86,7 +86,7 @@ export class AuthService
             logger.error( "Error creating token", { email: data.email } )
             throw ApiError.badRequest( "Invalid credentials", [ "Invalid credentials or server error" ] )
         }
-        await this.authRepository.updateRefreshToken( Token.refreshToken, user.id )
+        await this.authRepository.updateRefreshToken( user.id, Token.refreshToken )
         await Promise.all( [
             this.cacheRepository.delete( otpKey( data.email ) ),
             this.cacheRepository.delete( signupKey( data.email ) )
@@ -154,7 +154,7 @@ export class AuthService
             logger.error( "Error creating token", { email: data.email } )
             throw ApiError.badRequest( "Invalid credentials", [ "Invalid credentials or server error" ] )
         }
-        await this.authRepository.updateRefreshToken( Token.refreshToken, userData.id )
+        await this.authRepository.updateRefreshToken( userData.id, Token.refreshToken )
         return {
             ...userData,
             accessToken: Token.accessToken,
@@ -177,10 +177,10 @@ export class AuthService
         try
         {
             const decodedToken: RefreshTokenPayload | null = verifyRefreshToken( refreshToken )
-            const user = await this.authRepository.getUserWithPasswordByEmail( decodedToken?.id ?? "" )
+            const user = await this.authRepository.getUserWithPasswordByEmail( decodedToken?.email ?? "" )
             if ( !user )
             {
-                logger.error( "User not found", { user } )
+                logger.error( "User not found" )
                 throw ApiError.badRequest( "User not found", [ "User not found" ] )
             }
             if ( !user.refreshToken )
@@ -205,7 +205,7 @@ export class AuthService
                 logger.error( "Error creating token", { user } )
                 throw ApiError.badRequest( "Invalid credentials", [ "Invalid credentials or server error" ] )
             }
-            await this.authRepository.updateRefreshToken( Token.refreshToken, userData.id )
+            await this.authRepository.updateRefreshToken( userData.id, Token.refreshToken )
             return {
                 ...userData,
                 accessToken: Token.accessToken,
@@ -261,6 +261,11 @@ export class AuthService
         {
             logger.error( "Password reset link expired", { email: data.email } )
             throw ApiError.badRequest( "Password reset link expired", [ "Password reset link expired or invalid token" ] )
+        }
+        if ( cachedEmail !== data.email )
+        {
+            logger.error( "email mismatch", { email: data.email } )
+            throw ApiError.badRequest( "email mismatch", [ "email mismatch please try again with correct email" ] )
         }
         const user = await this.authRepository.getUserByEmail( cachedEmail )
         if ( !user )

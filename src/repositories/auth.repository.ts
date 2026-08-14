@@ -110,6 +110,17 @@ class AuthRepository implements IAuthRepository
             }, select: userSelect
         } )
     }
+    public async getUserWithPasswordByEmail ( email: string ): Promise<{ id: string; password: string | null,refreshToken:string|null } | null>
+    {
+        return await prisma.user.findUnique( {
+            where: { email },
+            select: {
+                id: true,
+                password: true,
+                refreshToken:true// ONLY this method exposes this field
+            },
+        } );
+    }
 }
 
 

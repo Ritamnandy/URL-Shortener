@@ -18,9 +18,9 @@ const resetCooldownKey = ( email: string ): string =>
 {
     return `reset-password-cooldown:${ email }`
 }
-const resetKey = ( email: string ): string =>
+const resetKey = ( hashToken: string ): string =>
 {
-    return `reset-password:${ email }`
+    return `reset-password:${ hashToken }`
 }
 
-export { signupKey, otpKey }
+export { signupKey, otpKey, resendCoolDownKey, resetCooldownKey, resetKey }
