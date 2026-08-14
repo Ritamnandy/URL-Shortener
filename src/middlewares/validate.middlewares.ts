@@ -5,8 +5,8 @@ import { z } from "zod"
 
 type ValidationTarget = "body" | "params" | "query"
 
-export const validate = <T extends z.ZodType> (
-    schema: T,
+export const validate = (
+    schema: z.ZodType,
     target: ValidationTarget = "body"
 ) =>
 {
