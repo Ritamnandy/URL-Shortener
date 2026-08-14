@@ -10,19 +10,28 @@ const worker = new Worker( 'EmailQueue', async ( job ) =>
     switch ( job.name )
     {
         case "send-verification-email":
-            const { token, userEmail, userName } = job.data as VerifyEmailJobData;
-            await VerifyMail( userEmail, token, userName );
-            break;
+            {
+                const { token, userEmail, userName } = job.data as VerifyEmailJobData;
+                await VerifyMail( userEmail, token, userName );
+                break;
+            }
         case "send-forget-password-email":
-            const { link, userEmail: email, userName: name } = job.data as ForgetPasswordJobData;
-            await forgetPasswordMail( email, name, link );
+            {
+                const { link, userEmail: email, userName: name } = job.data as ForgetPasswordJobData;
+                await forgetPasswordMail( email, name, link );
+                break;
+            }
         case "send-password-change-email":
-            const { userEmail: email2, userName: name2 } = job.data as PasswordChangeJobData;
-            await PasswordChangeMail( email2, name2 );
-            break;
+            {
+                const { userEmail: email2, userName: name2 } = job.data as PasswordChangeJobData;
+                await PasswordChangeMail( email2, name2 );
+                break;
+            }
         default:
-            logger.warn( `Unknown job name: ${ job.name }` );
-            break;
+            {
+                logger.warn( `Unknown job name: ${ job.name }` );
+                break;
+            }
     }
 
 }, { connection, concurrency: 5 } )
