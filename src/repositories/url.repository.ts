@@ -63,3 +63,5 @@ class ShorturlRepository implements IshortUrlRepository
         return result ? true : false
     }
 }
+
+export const urlRepository = new ShorturlRepository()
