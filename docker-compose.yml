@@ -13,16 +13,15 @@ services:
     volumes:
       - postgres-volume:/var/lib/postgresql/data
 
-  adminer:
-    image: adminer:latest
-    container_name: adminer-web
+  cacheDB:
+    image: redis:8-alpine
+    container_name: redis-cache
     networks:
       - custom-network
     ports:
-      - 8000:8080
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ritam@example.com
-      PGADMIN_DEFAULT_PASSWORD: password
+      - 6379:6379
+    volumes:
+      - redis-volume:/data
 
 networks:
   custom-network:
@@ -31,3 +30,5 @@ networks:
 volumes:
   postgres-volume:
     external: true
+  redis-volume:
+

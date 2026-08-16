@@ -64,11 +64,52 @@ const forgotPasswordLimiter = createAuthLimiter( {
     label: "forgot-password",
 } );
 
+const getUrlByIdLimiter = createAuthLimiter( {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    label: "get-url-by-id",
+} );
+
+const getUrlByshortCodeLimiter = createAuthLimiter( {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    label: "get-url-by-short-code",
+} );
+const updateUrlLimiter = createAuthLimiter( {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    label: "update-url",
+} );
+
+const deleteUrlLimiter = createAuthLimiter( {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    label: "delete-url",
+} );
+const createShortUrlLimiter = createAuthLimiter( {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    label: "create-url",
+} );
+
+const getUserDetailsLimiter = createAuthLimiter( {
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    label: "get-user-details",
+} );
+
+
+
 export
 {
     loginLimiter,
     registerLimiter,
     verifyEmailLimiter,
     resendCodeLimiter,
-    forgotPasswordLimiter
+    forgotPasswordLimiter,
+    getUrlByIdLimiter,
+    getUrlByshortCodeLimiter,
+    updateUrlLimiter,
+    deleteUrlLimiter,
+    createShortUrlLimiter
 }

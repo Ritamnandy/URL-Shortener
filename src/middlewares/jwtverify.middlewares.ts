@@ -5,7 +5,7 @@ import { authRepository } from "../repositories/index.js"
 import { logger, asyncHandler, ApiError, verifyAccessToken } from '../utils/index.js';
 import type { AccessTokenPayload, CreatedUser } from '../interfaces/index.js';
 
-interface AuthRequest extends Request
+export interface AuthRequest extends Request
 {
     user?: CreatedUser;
 }
