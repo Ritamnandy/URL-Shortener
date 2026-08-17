@@ -22,13 +22,13 @@ const createShortUrl = asyncHandler( async ( req: AuthRequest, res: Response ) =
 const updateShortUrl = asyncHandler( async ( req: AuthRequest, res: Response ) =>
 {
     const user = req.user;
-    const { shortUrl } = req.body as urlInput
+    const shortUrl = req.params.shortUrl as string
     if ( !user )
     {
         logger.warn( "unauthorized request", { message: "user not found" } )
         throw ApiError.unauthorized( "unauthorized request", [ "user not found please login or register" ] )
     }
-    const response = await urlSortServices.updateShortUrl( shortUrl, user.id, req.body as urlInput )
+    const response = await urlSortServices.updateShortUrl( shortUrl, user.id, req.body as Partial<urlInput> )
     return res.status( 200 ).json( ApiResponse.ok( "Short url updated successfully", response ) )
 
 } )
@@ -37,7 +37,7 @@ const updateShortUrl = asyncHandler( async ( req: AuthRequest, res: Response ) =
 const deleteShortUrl = asyncHandler( async ( req: AuthRequest, res: Response ) =>
 {
     const user = req.user;
-    const { shortUrl } = req.body as urlInput
+    const shortUrl = req.params.shortUrl as string
     if ( !user )
     {
         logger.warn( "unauthorized request", { message: "user not found" } )
@@ -50,13 +50,13 @@ const deleteShortUrl = asyncHandler( async ( req: AuthRequest, res: Response ) =
 const getUrlByShortCode = asyncHandler( async ( req: AuthRequest, res: Response ) =>
 {
     const user = req.user;
-    const { shortUrl } = req.body as Partial<urlInput>
+    const shortUrl = req.params.shortUrl as string
     if ( !user )
     {
         logger.warn( "unauthorized request", { message: "user not found" } )
         throw ApiError.unauthorized( "unauthorized request", [ "user not found please login or register" ] )
     }
-    const response = await urlSortServices.getUrlByShortCode( shortUrl as string )
+    const response = await urlSortServices.getUrlByShortCode( shortUrl )
     return res.status( 200 ).json( ApiResponse.ok( "Short url fetched successfully", response ) )
 } )
 

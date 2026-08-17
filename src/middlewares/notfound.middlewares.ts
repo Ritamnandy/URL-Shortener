@@ -10,3 +10,5 @@ const notFound = (
 {
     next( ApiError.notFound( `Route ${ req.originalUrl } not found` ) )
 }
+
+export { notFound }

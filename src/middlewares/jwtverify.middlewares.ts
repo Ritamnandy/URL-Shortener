@@ -46,3 +46,5 @@ const verifyJWT = asyncHandler( async ( req: AuthRequest, res: Response, next: N
         throw ApiError.unauthorized( "Unauthorized request", [ "Unauthorized request please login or signup " ] )
     }
 } )
+
+export { verifyJWT }

@@ -107,6 +107,7 @@ export
     verifyEmailLimiter,
     resendCodeLimiter,
     forgotPasswordLimiter,
+    getUserDetailsLimiter,
     getUrlByIdLimiter,
     getUrlByshortCodeLimiter,
     updateUrlLimiter,

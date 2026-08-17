@@ -17,6 +17,21 @@ const urlSchema = object( {
         .max( 100, { message: "Title must be at most 100 characters long" } ),
 } )
 
+const shortUrlParamsSchema = object( {
+    shortUrl: z
+        .string()
+        .trim()
+        .min( 1, { message: "Short URL code is required" } )
+        .max( 100, { message: "Short URL code must be at most 100 characters long" } )
+        .regex( /^[A-Za-z0-9_-]+$/, { message: "Short URL code contains invalid characters" } )
+} )
+
+const updateUrlSchema = urlSchema
+    .partial()
+    .refine( ( value ) => Object.keys( value ).length > 0, {
+        message: "Provide at least one field to update"
+    } )
+
 type urlbody = z.infer<typeof urlSchema>
 type urlInput = {
     originalUrl: urlbody[ "originalUrl" ]
@@ -26,4 +41,4 @@ type urlInput = {
     expiryAt: Date
 }
 
-export { urlSchema, type urlInput, type urlbody }
+export { urlSchema, updateUrlSchema, shortUrlParamsSchema, type urlInput, type urlbody }

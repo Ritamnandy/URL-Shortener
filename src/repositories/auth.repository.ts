@@ -85,7 +85,7 @@ class AuthRepository implements IAuthRepository
         }
     }
 
-    public async updateRefreshToken ( id: string, refreshToken: string ): Promise<void>
+    public async updateRefreshToken ( id: string, refreshToken: string | null ): Promise<void>
     {
         await prisma.user.update( {
             where: {

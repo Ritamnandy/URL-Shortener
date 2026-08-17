@@ -164,12 +164,7 @@ export class AuthService
 
     async logoutUser ( userId: string ): Promise<void>
     {
-        const response = await this.authRepository.deleteUser( userId )
-        if ( !response )
-        {
-            logger.error( "Error deleting user", { userId } )
-            throw ApiError.badRequest( "Error deleting user", [ "Error deleting user" ] )
-        }
+        await this.authRepository.updateRefreshToken( userId, null )
     }
 
     async refreshAccessToken ( refreshToken: string ): Promise<sendUser>

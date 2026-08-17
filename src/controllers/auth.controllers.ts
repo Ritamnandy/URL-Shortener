@@ -8,16 +8,16 @@ import type { Request, Response, CookieOptions } from "express"
 const AccessTokenOptions: CookieOptions = {
 
     httpOnly: true,
-    sameSite: "none",
-    secure: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 3 * 1000
 }
 
 const RefreshTokenOptions: CookieOptions = {
 
     httpOnly: true,
-    sameSite: "none",
-    secure: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 14 * 1000
 }
 
@@ -60,7 +60,11 @@ const logoutUser = asyncHandler( async ( req: AuthRequest, res: Response ) =>
         throw ApiError.unauthorized( "unauthorized request", [ "user not found" ] )
     }
     const responseData = await authService.logoutUser( user.id )
-    return res.status( 200 ).json( ApiResponse.ok( "User logged out successfully", responseData ) )
+    return res
+        .clearCookie( "accessToken", AccessTokenOptions )
+        .clearCookie( "refreshToken", RefreshTokenOptions )
+        .status( 200 )
+        .json( ApiResponse.ok( "User logged out successfully", responseData ) )
 } )
 
 
@@ -91,7 +95,12 @@ const userDetails = asyncHandler( async ( req: AuthRequest, res: Response ) =>
 
 const refreshAccessToken = asyncHandler( async ( req: Request, res: Response ) =>
 {
-    const response = await authService.refreshAccessToken( req.body )
+    const refreshToken = req.cookies.refreshToken ?? req.body?.refreshToken
+    if ( typeof refreshToken !== "string" )
+    {
+        throw ApiError.unauthorized( "Refresh token is required", [ "Refresh token is required" ] )
+    }
+    const response = await authService.refreshAccessToken( refreshToken )
     return res.status( 200 )
         .cookie( "accessToken", response.accessToken, AccessTokenOptions )
         .cookie( "refreshToken", response.refreshToken, RefreshTokenOptions )
