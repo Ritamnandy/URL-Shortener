@@ -43,25 +43,25 @@ class UrlShortServices
         await this.cacheRepository.set( sortUrlkey( sortCode ), JSON.stringify( responseData ), 60 * 5 )
         return responseData
     }
-    async getShortUrlById ( id: string ): Promise<ShortUrlRecord[] | []>
+    async getShortUrlById ( userId: string ): Promise<ShortUrlRecord[] | []>
     {
 
-        const cacheData = await this.cacheRepository.get( sortUrlByIdkey( id ) )
+        const cacheData = await this.cacheRepository.get( sortUrlByIdkey( userId ) )
         if ( cacheData )
         {
             return JSON.parse( cacheData ) as ShortUrlRecord[]
         }
-        const responseData = await this.shortUrlRepository.getUrlsByUser( id )
+        const responseData = await this.shortUrlRepository.getUrlsByUser( userId )
         if ( !responseData )
         {
-            logger.error( "Short URL not found", { id } )
+            logger.error( "Short URL not found", { userId } )
             throw ApiError.notFound( "Short URL not found", [ "Short URL not found" ] )
         }
-        await this.cacheRepository.set( sortUrlByIdkey( id ), JSON.stringify( responseData ), 60 * 5 )
+        await this.cacheRepository.set( sortUrlByIdkey( userId ), JSON.stringify( responseData ), 60 * 5 )
         return responseData
     }
 
-    async updateShortUrl ( shortCode: string, userId: string, data: Partial<urlInput> ): Promise<ShortUrlRecord | null>
+    async updateShortUrl ( shortCode: string, userId: string, data: Partial<urlInput> ): Promise<ShortUrlRecord >
     {
         const responseData = await this.shortUrlRepository.updateShortUrl( shortCode, userId, data )
         if ( !responseData )
