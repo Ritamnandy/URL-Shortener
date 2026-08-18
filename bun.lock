@@ -26,7 +26,7 @@
         "passport-google-oauth20": "^2.0.0",
         "pg": "^8.23.0",
         "winston-daily-rotate-file": "^5.0.0",
-        "zod": "^4.4.3",
+        "zod": "^4.4.3"
       },
       "devDependencies": {
         "@types/bcrypt": "^6.0.0",
@@ -43,9 +43,9 @@
         "@types/request-ip": "^0.0.41",
         "prisma": "^7.9.1",
         "tsx": "^4.23.12",
-        "typescript": "^7.0.2",
-      },
-    },
+        "typescript": "^7.0.2"
+      }
+    }
   },
   "packages": {
     "@colors/colors": ["@colors/colors@1.6.0", "", {}, "sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA=="],
@@ -934,6 +934,6 @@
 
     "type-is/mime-types/mime-db": ["mime-db@1.52.0", "", {}, "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg=="],
 
-    "web-resource-inliner/htmlparser2/domhandler": ["domhandler@3.3.0", "", { "dependencies": { "domelementtype": "^2.0.1" } }, "sha512-J1C5rIANUbuYK+FuFL98650rihynUOEzRLxW+90bKZRWB6A1X1Tf82GxR1qAWLyfNPRvjqfip3Q5tdYlmAa9lA=="],
+    "web-resource-inliner/htmlparser2/domhandler": ["domhandler@3.3.0", "", { "dependencies": { "domelementtype": "^2.0.1" } }, "sha512-J1C5rIANUbuYK+FuFL98650rihynUOEzRLxW+90bKZRWB6A1X1Tf82GxR1qAWLyfNPRvjqfip3Q5tdYlmAa9lA=="]
   }
 }
