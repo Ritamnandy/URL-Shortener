@@ -1,5 +1,5 @@
 
-import type { urlInput } from "../../schemas/index.js"
+import type { createShortUrlInput, urlInput } from "../../schemas/index.js"
 interface ShortUrlRecord
 {
     id: string;
@@ -7,14 +7,15 @@ interface ShortUrlRecord
     originalUrl: string;
     title: string | null;
     userId: string;
-    expiresAt: Date | null;
+    expiryAt: Date | null;
     createdAt: Date;
+    status: string;
 }
 
 interface IshortUrlRepository
 {
     //create
-    createShortUrl ( data: urlInput, userId: string ): Promise<ShortUrlRecord | null>
+    createShortUrl ( data: createShortUrlInput, userId: string ): Promise<ShortUrlRecord | null>
     // Read
     getByShortCode ( shortCode: string ): Promise<ShortUrlRecord | null>;
 

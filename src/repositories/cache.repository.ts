@@ -7,7 +7,7 @@ class CacheRepository implements IcacheRepository
 {
     public async set ( key: string, value: string ): Promise<void>
     {
-        await redis.set( key, value )
+        await redis.set( key, value, "EX", 60 * 5 )
     }
     public async get ( key: string ): Promise<string | null>
     {

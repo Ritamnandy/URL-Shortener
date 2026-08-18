@@ -4,9 +4,17 @@ import { cacheRepository, urlRepository } from "../repositories/index.js";
 
 import type { urlInput } from "../schemas/index.js"
 import { ApiError, logger } from "../utils/index.js"
+import { randomBytes } from "node:crypto";
 
 const sortUrlByIdkey = ( id: string ) => `short-urlbyId:${ id }`
 const sortUrlkey = ( sortCode: string ) => `short-url:${ sortCode }`
+const SHORT_CODE_ATTEMPTS = 5
+
+const createShortCode = (): string => randomBytes( 6 ).toString( "base64url" )
+
+const isUniqueConstraintError = ( error: unknown ): boolean =>
+    typeof error === "object" && error !== null && "code" in error && ( error as { code?: unknown } ).code === "P2002"
+
 class UrlShortServices
 {
     constructor (
@@ -17,13 +25,40 @@ class UrlShortServices
 
     async createUrl ( data: urlInput, userId: string ): Promise<ShortUrlRecord>
     {
-        const sortUrlData = await this.shortUrlRepository.createShortUrl( data, userId )
-        if ( !sortUrlData )
+        for ( let attempt = 0; attempt < SHORT_CODE_ATTEMPTS; attempt++ )
         {
-            logger.error( "Error on creating short URL", { data, userId } )
-            throw ApiError.badRequest( "Error creating short URL", [ "Error creating short URL" ] )
+            const shortUrl = createShortCode()
+            const existingUrl = await this.shortUrlRepository.getByShortCode( shortUrl )
+
+            if ( existingUrl )
+            {
+                continue
+            }
+
+            try
+            {
+                const shortUrlData = await this.shortUrlRepository.createShortUrl( {
+                    ...data,
+                    shortUrl
+                }, userId )
+
+                if ( shortUrlData )
+                {
+                    await this.cacheRepository.delete( sortUrlByIdkey( userId ) )
+                    return shortUrlData
+                }
+            } catch ( error )
+            {
+                if ( isUniqueConstraintError( error ) )
+                {
+                    continue
+                }
+                throw error
+            }
         }
-        return sortUrlData
+
+        logger.error( "Unable to generate a unique short URL", { userId } )
+        throw ApiError.serviceUnavailable( "Could not create short URL", [ "Please try again" ] )
     }
 
     async getUrlByShortCode ( sortCode: string ): Promise<ShortUrlRecord>
@@ -42,6 +77,19 @@ class UrlShortServices
         }
         await this.cacheRepository.set( sortUrlkey( sortCode ), JSON.stringify( responseData ), 60 * 5 )
         return responseData
+    }
+
+    async getRedirectUrl ( sortCode: string ): Promise<ShortUrlRecord>
+    {
+        const shortUrlData = await this.getUrlByShortCode( sortCode )
+        const isExpired = shortUrlData.expiryAt !== null && shortUrlData.expiryAt.getTime() <= Date.now()
+
+        if ( shortUrlData.status !== "ACTIVE" || isExpired )
+        {
+            throw ApiError.notFound( "Short URL is unavailable", [ "Short URL is unavailable" ] )
+        }
+
+        return shortUrlData
     }
     async getShortUrlById ( userId: string ): Promise<ShortUrlRecord[] | []>
     {

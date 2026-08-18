@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create and manage your short links.">
+    <title>My links | Shorten</title>
+    <style nonce="<%= typeof cspNonce === 'undefined' ? '' : cspNonce %>">
+        :root {
+            color-scheme: light;
+            --page: #f6f7fb;
+            --surface: #ffffff;
+            --text: #172033;
+            --muted: #667085;
+            --line: #dce2ee;
+            --primary: #4659e8;
+            --primary-dark: #3547ce;
+            --success: #067647;
+            --danger: #b42318;
+            --ring: rgba(70, 89, 232, .18);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text);
+            background: var(--page);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        button, input { font: inherit; }
+
+        .topbar {
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 max(24px, calc((100vw - 1040px) / 2));
+            background: var(--surface);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 30px;
+            height: 30px;
+            display: grid;
+            place-items: center;
+            border-radius: 9px;
+            color: #fff;
+            background: var(--primary);
+            font-size: .9rem;
+        }
+
+        .logout {
+            cursor: pointer;
+            padding: 8px 11px;
+            border: 0;
+            border-radius: 8px;
+            color: var(--muted);
+            background: transparent;
+            font-size: .9rem;
+            font-weight: 650;
+        }
+
+        .logout:hover { color: var(--text); background: #f1f3f8; }
+
+        main {
+            width: min(100% - 32px, 1040px);
+            margin: 0 auto;
+            padding: 56px 0;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 2.75rem);
+            letter-spacing: -.055em;
+        }
+
+        .lead {
+            margin: 10px 0 29px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        .card {
+            padding: 26px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(30, 41, 59, .045);
+        }
+
+        .shorten-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(160px, .35fr) auto;
+            gap: 12px;
+        }
+
+        input {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 13px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            outline: none;
+            color: var(--text);
+            background: #fff;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+
+        input::placeholder { color: #98a2b3; }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--ring);
+        }
+
+        .primary-button, .secondary-button, .icon-button {
+            cursor: pointer;
+            border: 0;
+            border-radius: 10px;
+            font-weight: 700;
+            transition: background .15s ease, transform .15s ease;
+        }
+
+        .primary-button {
+            min-height: 48px;
+            padding: 0 20px;
+            color: #fff;
+            background: var(--primary);
+        }
+
+        .primary-button:hover { background: var(--primary-dark); }
+        .primary-button:active, .secondary-button:active, .icon-button:active { transform: translateY(1px); }
+        button:disabled { cursor: wait; opacity: .65; }
+
+        .notice {
+            display: none;
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 9px;
+            font-size: .9rem;
+        }
+
+        .notice.visible { display: block; }
+        .notice.success { color: var(--success); background: #ecfdf3; }
+        .notice.error { color: var(--danger); background: #fef3f2; }
+
+        .result {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 14px;
+            border: 1px solid #b9e6d0;
+            border-radius: 10px;
+            background: #f0fdf4;
+        }
+
+        .result.visible { display: flex; }
+
+        .result-copy { min-width: 0; }
+        .result-label { display: block; margin-bottom: 3px; color: var(--success); font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+        .short-link { overflow: hidden; display: block; color: #05603a; font-weight: 750; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+        .short-link:hover { text-decoration: underline; }
+
+        .secondary-button, .icon-button {
+            flex: none;
+            padding: 9px 12px;
+            color: #344054;
+            background: #fff;
+            border: 1px solid var(--line);
+            font-size: .86rem;
+        }
+
+        .secondary-button:hover, .icon-button:hover { background: #f8faff; }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 16px;
+            margin: 46px 0 15px;
+        }
+
+        h2 { margin: 0; font-size: 1.18rem; letter-spacing: -.02em; }
+        .link-count { color: var(--muted); font-size: .88rem; }
+
+        .link-list { display: grid; gap: 10px; }
+
+        .link-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 20px;
+            padding: 17px 18px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 13px;
+        }
+
+        .link-details { min-width: 0; }
+        .link-title { overflow: hidden; margin: 0 0 5px; color: var(--text); font-size: .98rem; font-weight: 720; text-overflow: ellipsis; white-space: nowrap; }
+        .link-title a { color: inherit; text-decoration: none; }
+        .link-title a:hover { color: var(--primary); }
+        .destination { overflow: hidden; margin: 0; color: var(--muted); font-size: .84rem; text-overflow: ellipsis; white-space: nowrap; }
+        .destination a { color: inherit; text-decoration: none; }
+        .destination a:hover { text-decoration: underline; }
+        .created-at { display: block; margin-top: 8px; color: #98a2b3; font-size: .75rem; }
+
+        .row-actions { display: flex; gap: 8px; }
+        .delete-button { color: var(--danger); }
+        .delete-button:hover { color: #912018; background: #fef3f2; border-color: #fecdca; }
+
+        .empty-state {
+            padding: 42px 20px;
+            color: var(--muted);
+            text-align: center;
+            background: var(--surface);
+            border: 1px dashed #cbd5e1;
+            border-radius: 13px;
+        }
+
+        @media (max-width: 700px) {
+            .shorten-form { grid-template-columns: 1fr; }
+            .primary-button { width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .topbar { padding: 0 16px; }
+            main { width: min(100% - 24px, 1040px); padding: 34px 0; }
+            .card { padding: 17px; }
+            .link-row { grid-template-columns: 1fr; gap: 14px; }
+            .row-actions { justify-content: flex-end; }
+            .result.visible { align-items: stretch; flex-direction: column; }
+            .result .secondary-button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/dashboard" aria-label="Shorten dashboard">
+            <span class="brand-mark" aria-hidden="true">↗</span>
+            Shorten
+        </a>
+        <button class="logout" id="logout-button" type="button">Sign out</button>
+    </header>
+
+    <main>
+        <h1>Make every link count.</h1>
+        <p class="lead">Paste a long URL to create a short, shareable link in seconds.</p>
+
+        <section class="card" aria-label="Create a short link">
+            <form id="shorten-form" class="shorten-form">
+                <label class="sr-only" for="original-url">Destination URL</label>
+                <input id="original-url" name="originalUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://example.com/a-very-long-link" maxlength="100" required>
+                <label class="sr-only" for="title">Link title</label>
+                <input id="title" name="title" type="text" autocomplete="off" placeholder="Optional title" maxlength="100">
+                <button id="shorten-button" class="primary-button" type="submit">Shorten URL</button>
+            </form>
+
+            <p id="notice" class="notice" role="status" aria-live="polite"></p>
+
+            <div id="result" class="result" aria-live="polite">
+                <div class="result-copy">
+                    <span class="result-label">Your short link</span>
+                    <a id="result-link" class="short-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+                </div>
+                <button id="copy-result" class="secondary-button" type="button">Copy link</button>
+            </div>
+        </section>
+
+        <section aria-labelledby="links-heading">
+            <div class="section-heading">
+                <h2 id="links-heading">Your links</h2>
+                <span id="link-count" class="link-count">Loading…</span>
+            </div>
+            <div id="link-list" class="link-list" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <script nonce="<%= typeof cspNonce === 'undefined' ? '' : cspNonce %>">
+        const apiBase = "/api/v1/urls";
+        const form = document.querySelector( "#shorten-form" );
+        const originalUrlInput = document.querySelector( "#original-url" );
+        const titleInput = document.querySelector( "#title" );
+        const shortenButton = document.querySelector( "#shorten-button" );
+        const notice = document.querySelector( "#notice" );
+        const result = document.querySelector( "#result" );
+        const resultLink = document.querySelector( "#result-link" );
+        const copyResultButton = document.querySelector( "#copy-result" );
+        const linkList = document.querySelector( "#link-list" );
+        const linkCount = document.querySelector( "#link-count" );
+        const logoutButton = document.querySelector( "#logout-button" );
+
+        class RequestError extends Error {
+            constructor( message, status ) {
+                super( message );
+                this.status = status;
+            }
+        }
+
+        const shortLinkFor = ( shortCode ) => new URL( `/${ shortCode }`, window.location.origin ).href;
+
+        const errorMessage = ( payload, fallback ) => {
+            if ( Array.isArray( payload?.error ) && payload.error.length > 0 ) {
+                const firstError = payload.error[ 0 ];
+                return typeof firstError === "string" ? firstError : payload.message || fallback;
+            }
+            return payload?.message || fallback;
+        };
+
+        const request = async ( path, options = {} ) => {
+            const response = await fetch( path, {
+                credentials: "same-origin",
+                ...options,
+                headers: {
+                    ...( options.body ? { "Content-Type": "application/json" } : {} ),
+                    ...options.headers
+                }
+            } );
+            const payload = await response.json().catch( () => null );
+
+            if ( !response.ok || !payload?.success ) {
+                throw new RequestError( errorMessage( payload, "Something went wrong. Please try again." ), response.status );
+            }
+            return payload;
+        };
+
+        const showNotice = ( message, type = "error" ) => {
+            notice.textContent = message;
+            notice.className = `notice visible ${ type }`;
+        };
+
+        const clearNotice = () => {
+            notice.textContent = "";
+            notice.className = "notice";
+        };
+
+        const copyText = async ( text ) => {
+            if ( navigator.clipboard && window.isSecureContext ) {
+                await navigator.clipboard.writeText( text );
+                return;
+            }
+
+            const temporaryInput = document.createElement( "textarea" );
+            temporaryInput.value = text;
+            temporaryInput.setAttribute( "readonly", "" );
+            temporaryInput.style.position = "fixed";
+            temporaryInput.style.opacity = "0";
+            document.body.append( temporaryInput );
+            temporaryInput.select();
+            document.execCommand( "copy" );
+            temporaryInput.remove();
+        };
+
+        const formatDate = ( value ) => new Intl.DateTimeFormat( undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+        } ).format( new Date( value ) );
+
+        const createActionButton = ( label, className, clickHandler ) => {
+            const button = document.createElement( "button" );
+            button.type = "button";
+            button.className = `icon-button ${ className }`;
+            button.textContent = label;
+            button.addEventListener( "click", clickHandler );
+            return button;
+        };
+
+        const renderLinks = ( links ) => {
+            linkList.replaceChildren();
+            linkCount.textContent = `${ links.length } ${ links.length === 1 ? "link" : "links" }`;
+
+            if ( links.length === 0 ) {
+                const empty = document.createElement( "p" );
+                empty.className = "empty-state";
+                empty.textContent = "Your shortened links will appear here.";
+                linkList.append( empty );
+                return;
+            }
+
+            for ( const link of links ) {
+                const shortLink = shortLinkFor( link.shortUrl );
+                const row = document.createElement( "article" );
+                row.className = "link-row";
+
+                const details = document.createElement( "div" );
+                details.className = "link-details";
+                const title = document.createElement( "h3" );
+                title.className = "link-title";
+                const titleAnchor = document.createElement( "a" );
+                titleAnchor.href = shortLink;
+                titleAnchor.target = "_blank";
+                titleAnchor.rel = "noopener noreferrer";
+                titleAnchor.textContent = link.title || link.shortUrl;
+                title.append( titleAnchor );
+
+                const destination = document.createElement( "p" );
+                destination.className = "destination";
+                const destinationAnchor = document.createElement( "a" );
+                destinationAnchor.href = link.originalUrl;
+                destinationAnchor.target = "_blank";
+                destinationAnchor.rel = "noopener noreferrer";
+                destinationAnchor.textContent = link.originalUrl;
+                destination.append( destinationAnchor );
+
+                const createdAt = document.createElement( "time" );
+                createdAt.className = "created-at";
+                createdAt.dateTime = link.createdAt;
+                createdAt.textContent = `Created ${ formatDate( link.createdAt ) }`;
+                details.append( title, destination, createdAt );
+
+                const actions = document.createElement( "div" );
+                actions.className = "row-actions";
+                actions.append(
+                    createActionButton( "Copy", "", async () => {
+                        try {
+                            await copyText( shortLink );
+                            showNotice( "Short link copied to your clipboard.", "success" );
+                        } catch {
+                            showNotice( "Could not copy the short link. Please copy it manually." );
+                        }
+                    } ),
+                    createActionButton( "Delete", "delete-button", async () => {
+                        if ( !window.confirm( "Delete this short link? This cannot be undone." ) ) {
+                            return;
+                        }
+                        try {
+                            await request( `${ apiBase }/${ encodeURIComponent( link.shortUrl ) }`, { method: "DELETE" } );
+                            showNotice( "Short link deleted.", "success" );
+                            await loadLinks();
+                        } catch ( error ) {
+                            handleRequestError( error );
+                        }
+                    } )
+                );
+
+                row.append( details, actions );
+                linkList.append( row );
+            }
+        };
+
+        const handleRequestError = ( error ) => {
+            if ( error instanceof RequestError && error.status === 401 ) {
+                window.location.assign( "/login" );
+                return;
+            }
+            showNotice( error instanceof Error ? error.message : "Something went wrong. Please try again." );
+        };
+
+        const loadLinks = async () => {
+            try {
+                const response = await request( apiBase );
+                renderLinks( Array.isArray( response.data ) ? response.data : [] );
+            } catch ( error ) {
+                linkCount.textContent = "";
+                handleRequestError( error );
+            }
+        };
+
+        form.addEventListener( "submit", async ( event ) => {
+            event.preventDefault();
+            clearNotice();
+            result.classList.remove( "visible" );
+            shortenButton.disabled = true;
+            shortenButton.textContent = "Shortening…";
+
+            try {
+                const response = await request( apiBase, {
+                    method: "POST",
+                    body: JSON.stringify( {
+                        originalUrl: originalUrlInput.value.trim(),
+                        ...( titleInput.value.trim() ? { title: titleInput.value.trim() } : {} )
+                    } )
+                } );
+                const shortLink = shortLinkFor( response.data.shortUrl );
+                resultLink.href = shortLink;
+                resultLink.textContent = shortLink;
+                result.classList.add( "visible" );
+                form.reset();
+                showNotice( "Your short link is ready to share.", "success" );
+                await loadLinks();
+            } catch ( error ) {
+                handleRequestError( error );
+            } finally {
+                shortenButton.disabled = false;
+                shortenButton.textContent = "Shorten URL";
+            }
+        } );
+
+        copyResultButton.addEventListener( "click", async () => {
+            try {
+                await copyText( resultLink.href );
+                copyResultButton.textContent = "Copied";
+                window.setTimeout( () => { copyResultButton.textContent = "Copy link"; }, 1800 );
+            } catch {
+                showNotice( "Could not copy the short link. Please copy it manually." );
+            }
+        } );
+
+        logoutButton.addEventListener( "click", async () => {
+            logoutButton.disabled = true;
+            try {
+                await fetch( "/api/v1/auth/logout", { method: "POST", credentials: "same-origin" } );
+            } finally {
+                window.location.assign( "/login" );
+            }
+        } );
+
+        loadLinks();
+    </script>
+</body>
+</html>

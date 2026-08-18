@@ -57,7 +57,18 @@ const getUrlByShortCode = asyncHandler( async ( req: AuthRequest, res: Response 
         throw ApiError.unauthorized( "unauthorized request", [ "user not found please login or register" ] )
     }
     const response = await urlSortServices.getUrlByShortCode( shortUrl )
+    if ( response.userId !== user.id )
+    {
+        throw ApiError.notFound( "Short URL not found", [ "Short URL not found" ] )
+    }
     return res.status( 200 ).json( ApiResponse.ok( "Short url fetched successfully", response ) )
+} )
+
+const redirectShortUrl = asyncHandler( async ( req: Request, res: Response ) =>
+{
+    const shortUrl = req.params.shortUrl as string
+    const response = await urlSortServices.getRedirectUrl( shortUrl )
+    return res.redirect( 302, response.originalUrl )
 } )
 
 
@@ -81,5 +92,6 @@ export
     updateShortUrl,
     deleteShortUrl,
     getUrlByShortCode,
+    redirectShortUrl,
     getAllUrls
 }

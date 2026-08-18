@@ -2,7 +2,7 @@
 import type { IshortUrlRepository, ShortUrlRecord } from "../interfaces/index.js"
 import { prisma } from "../configs/prisma.client.config.js"
 import { logger } from "../utils/index.js"
-import type { urlInput } from "../schemas/index.js"
+import type { createShortUrlInput, urlInput } from "../schemas/index.js"
 
 const selectedFields = {
     id: true,
@@ -10,16 +10,23 @@ const selectedFields = {
     originalUrl: true,
     title: true,
     userId: true,
-    expiresAt: true,
-    createdAt: true
+    expiryAt: true,
+    createdAt: true,
+    status: true
 } as const;
 
 class ShorturlRepository implements IshortUrlRepository
 {
-    public async createShortUrl ( data: urlInput, userId: string ): Promise<ShortUrlRecord | null>
+    public async createShortUrl ( data: createShortUrlInput, userId: string ): Promise<ShortUrlRecord | null>
     {
         return await prisma.short_Url.create( {
-            data, select: selectedFields
+            data: {
+                originalUrl: data.originalUrl,
+                title: data.title as string,
+                shortUrl: data.shortUrl,
+                userId
+            },
+            select: selectedFields
         } )
 
     }
@@ -38,29 +45,52 @@ class ShorturlRepository implements IshortUrlRepository
         return await prisma.short_Url.findMany( {
             where: {
                 userId
-            }, select: selectedFields
+            },
+            orderBy: {
+                createdAt: "desc"
+            },
+            select: selectedFields
         } )
     }
 
     public async updateShortUrl ( shortCode: string, userId: string, data: Partial<urlInput> ): Promise<ShortUrlRecord | null>
     {
-        return await prisma.short_Url.update( {
+        const existingUrl = await prisma.short_Url.findFirst( {
             where: {
                 shortUrl: shortCode,
                 userId
-            }, data, select: selectedFields
+            },
+            select: {
+                id: true
+            }
+        } )
+
+        if ( !existingUrl )
+        {
+            return null
+        }
+
+        return await prisma.short_Url.update( {
+            where: {
+                id: existingUrl.id
+            },
+            data: {
+                originalUrl: data.originalUrl as string,
+                title: data.title as string
+            },
+            select: selectedFields
         } )
     }
 
     public async deleteShortUrl ( shortCode: string, userId: string ): Promise<boolean>
     {
-        const result = await prisma.short_Url.delete( {
+        const result = await prisma.short_Url.deleteMany( {
             where: {
                 shortUrl: shortCode,
                 userId
             }
         } )
-        return result ? true : false
+        return result.count > 0
     }
 }
 

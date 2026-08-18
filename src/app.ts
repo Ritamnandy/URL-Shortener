@@ -1,15 +1,27 @@
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express from "express";
+import express, { type Request, type Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import { randomBytes } from "node:crypto";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { errorHandler, notFound } from "./middlewares/index.js";
+import { redirectShortUrl } from "./controllers/url_short.controllers.js";
 
 
 const app = express();
+const currentDirectory = dirname( fileURLToPath( import.meta.url ) );
 
 app.set( "trust proxy", 1 );
+app.set( "view engine", "ejs" );
+app.set( "views", join( currentDirectory, "views" ) );
+app.use( ( _req, res, next ) =>
+{
+    res.locals.cspNonce = randomBytes( 16 ).toString( "base64" );
+    next();
+} );
 app.use( helmet() );
 app.use( cors( {
     origin: process.env.CORS_ORIGIN?.split( "," ) ?? true,
@@ -25,10 +37,15 @@ app.get( "/health", ( _req, res ) =>
 {
     res.status( 200 ).json( { success: true, message: "Service is healthy" } );
 } );
+
+app.get( "/login", ( _req, res ) => res.render( "login.page" ) );
+app.get( "/register", ( _req, res ) => res.render( "register.page" ) );
+app.get( "/dashboard", ( _req, res ) => res.render( "url.page" ) );
 import { authRouter, urlRouter } from "./routes/index.js";
 
 app.use( "/api/v1/auth", authRouter );
 app.use( "/api/v1/urls", urlRouter );
+app.get( "/:shortUrl", redirectShortUrl );
 
 app.use( notFound );
 app.use( errorHandler );

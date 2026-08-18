@@ -14,7 +14,8 @@ const urlSchema = object( {
     title: z
         .string()
         .trim()
-        .max( 100, { message: "Title must be at most 100 characters long" } ),
+        .max( 100, { message: "Title must be at most 100 characters long" } )
+        .optional(),
 } )
 
 const shortUrlParamsSchema = object( {
@@ -33,12 +34,7 @@ const updateUrlSchema = urlSchema
     } )
 
 type urlbody = z.infer<typeof urlSchema>
-type urlInput = {
-    originalUrl: urlbody[ "originalUrl" ]
-    title: urlbody[ "title" ],
-    userId: string
-    shortUrl: string
-    expiryAt: Date
-}
+type urlInput = urlbody
+type createShortUrlInput = urlInput & { shortUrl: string }
 
-export { urlSchema, updateUrlSchema, shortUrlParamsSchema, type urlInput, type urlbody }
+export { urlSchema, updateUrlSchema, shortUrlParamsSchema, type urlInput, type createShortUrlInput, type urlbody }
