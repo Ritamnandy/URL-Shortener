@@ -1,15 +1,15 @@
 
-import jwt, { JsonWebTokenError, TokenExpiredError, type JwtPayload, type Secret, type SignOptions } from "jsonwebtoken"
+import jwt, { type JwtPayload, type Secret, type SignOptions } from "jsonwebtoken"
 import type { AccessTokenPayload, RefreshTokenPayload } from "../interfaces/index.js"
 import type { StringValue } from "ms"
 import { logger, requireEnv } from "./index.js";
 
 
-const jwtSecret: Secret = requireEnv( "JWT_SECRET" );
-const jwtExpiresIn = requireEnv( "JWT_EXPIRES_IN" ) as StringValue;
+const jwtSecret: Secret = requireEnv( "JWT_TOKEN_SECRET" );
+const jwtExpiresIn = requireEnv( "JWT_TOKEN_EXPIRES_IN" ) as StringValue;
 
-const refreshSecret: Secret = requireEnv( "REFRESH_SECRET" );
-const refreshExpiresIn = requireEnv( "REFRESH_EXPIRES_IN" ) as StringValue;
+const refreshSecret: Secret = requireEnv( "REFRESH_TOKEN_SECRET" );
+const refreshExpiresIn = requireEnv( "REFRESH_TOKEN_EXPIRES_IN" ) as StringValue;
 
 const ALGORITHM = "HS256" as const;
 
@@ -31,7 +31,7 @@ function verifyAccessToken ( token: string ): AccessTokenPayload | null
         return jwt.verify( token, jwtSecret, { algorithms: [ ALGORITHM ] } ) as AccessTokenPayload
     } catch ( err )
     {
-        if ( err instanceof TokenExpiredError || err instanceof JsonWebTokenError )
+        if ( err instanceof jwt.TokenExpiredError || err instanceof jwt.JsonWebTokenError )
         {
             logger.warn( `accessToken expired: ${ err.message }` );
             return null;
@@ -49,7 +49,7 @@ function verifyRefreshToken ( token: string ): RefreshTokenPayload | null
 
     } catch ( err )
     {
-        if ( err instanceof TokenExpiredError || err instanceof JsonWebTokenError )
+        if ( err instanceof jwt.TokenExpiredError || err instanceof jwt.JsonWebTokenError )
         {
             logger.warn( `refreshToken expired: ${ err.message }` );
             return null;
